@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Battle of Kingdoms — Tactical Chess Warfare</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Start game screen -->
+    <div id="start-screen" class="menu-screen">
+        <div class="title-chess-sprites" aria-hidden="true">
+            <span class="chess-sprite">♟</span>
+            <span class="chess-sprite">♞</span>
+            <span class="chess-sprite">♝</span>
+            <span class="chess-sprite">♜</span>
+            <span class="chess-sprite">♛</span>
+            <span class="chess-sprite">♚</span>
+        </div>
+        <h1 class="game-title">The Battle of Kingdoms</h1>
+        <p class="game-subtitle">Tactical Chess Warfare</p>
+        <button id="start-game-btn" class="btn-primary btn-large" type="button">Start Game</button>
+        <p class="game-credit">Game created by AKILESH REDDY KATREDDY</p>
+    </div>
+
+    <!-- Level select screen -->
+    <div id="levels-screen" class="menu-screen hidden">
+        <button id="back-from-levels-btn" class="btn-back" type="button">← Back</button>
+        <h2 class="screen-title">Select Level</h2>
+        <div id="levels-list"></div>
+    </div>
+
+    <!-- Tutorial select (3 pages: Close Combat, Ranged Combat, Defend) -->
+    <div id="tutorial-screen" class="menu-screen hidden">
+        <button id="back-from-tutorial-btn" class="btn-back" type="button">← Back</button>
+        <h2 class="screen-title">Training Grounds</h2>
+        <p class="tutorial-select-desc">Choose a lesson to learn the basics.</p>
+        <div id="tutorial-list"></div>
+    </div>
+
+    <!-- In-game UI (levels + tutorial) -->
+    <div id="game-container" class="hidden">
+        <div class="left-panel">
+            <div id="header">
+                <h1 id="header-level-title">The Battle of Kingdoms</h1>
+                <p id="header-level-subtitle" class="header-level-meta">Level <span id="header-level-num">1</span> · Turn <span id="current-turn">1</span></p>
+            </div>
+            <div id="objectives-panel">
+                <h3>Objectives</h3>
+                <ul id="objectives-list"></ul>
+            </div>
+            <div id="instructions" class="in-game-instructions">
+                <h3>How to Play</h3>
+                <ul>
+                    <li>Click a unit to select it</li>
+                    <li>Green tiles show valid moves</li>
+                    <li>Red tiles show attack range</li>
+                    <li>Units move like chess pieces</li>
+                    <li>Shared AP per turn; move/attack cost varies by unit</li>
+                </ul>
+            </div>
+            <div id="unit-info">
+                <h3>Selected Unit</h3>
+                <div id="unit-details">
+                    <p>No unit selected</p>
+                </div>
+            </div>
+            <div id="player-actions-box">
+                <h3>Action Points</h3>
+                <div id="action-points">
+                    <span>AP this turn: <span id="ap-display">12/12</span></span>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-area">
+            <canvas id="game-canvas"></canvas>
+            <div id="game-overlay">
+                <div id="victory-screen" class="overlay-screen hidden">
+                    <h2>Victory!</h2>
+                    <p>Level Complete</p>
+                    <div id="victory-stats" class="victory-stats"></div>
+                    <div class="victory-buttons">
+                        <button id="next-level-btn" class="btn-primary" type="button">Next Level</button>
+                        <button id="victory-back-to-training-btn" class="btn-secondary" type="button" style="display:none;">Back to Training</button>
+                        <button id="victory-level-select-btn" class="btn-secondary" type="button">Level Select</button>
+                    </div>
+                </div>
+                <div id="defeat-screen" class="overlay-screen hidden">
+                    <h2>Defeat</h2>
+                    <p>All units eliminated</p>
+                    <div class="victory-buttons">
+                        <button id="retry-btn" class="btn-primary" type="button">Retry</button>
+                        <button id="defeat-level-select-btn" class="btn-secondary" type="button">Level Select</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div id="high-score-display" class="high-score-display"></div>
+            <div id="action-panel">
+                <h3>Actions</h3>
+                <div id="turn-status" style="margin-bottom:8px;font-size:12px;color:#b0b0b0;"></div>
+                <div id="action-buttons">
+                    <button id="end-turn-btn" class="btn-primary" type="button">End Turn</button>
+                    <button id="restart-btn" class="btn-secondary" type="button">Restart Level</button>
+                    <button id="level-select-btn" class="btn-secondary" type="button">Level Select</button>
+                </div>
+            </div>
+            <div id="enemy-stats-panel">
+                <h3>Enemy stats</h3>
+                <div id="enemy-stats-content">—</div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/chessMoves.js"></script>
+    <script src="js/unit.js"></script>
+    <script src="js/board.js"></script>
+    <script src="js/gameEngine.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
