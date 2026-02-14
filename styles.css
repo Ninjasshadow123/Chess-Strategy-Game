@@ -729,7 +729,6 @@ button {
 
     #game-canvas {
         cursor: pointer;
-        touch-action: none;
     }
 
     button {
