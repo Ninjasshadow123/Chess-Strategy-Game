@@ -69,26 +69,29 @@ class GameEngine {
     }
 
     setupEventListeners() {
-        const onPointerUp = (e) => {
-            const coords = this.getEventCoords(e);
-            if (coords) this.handlePointer(coords.x, coords.y);
-            if (e.cancelable) e.preventDefault();
+        let lastTouchTime = 0;
+        const handleTap = (clientX, clientY) => {
+            this.handlePointer(clientX, clientY);
         };
-        if (window.PointerEvent) {
-            this.canvas.addEventListener('pointerup', onPointerUp);
-        } else {
-            this.canvas.addEventListener('click', (e) => {
-                const coords = this.getEventCoords(e);
-                if (coords) this.handlePointer(coords.x, coords.y);
-            });
-            this.canvas.addEventListener('touchend', (e) => {
-                if (e.changedTouches && e.changedTouches.length > 0) {
-                    const t = e.changedTouches[0];
-                    this.handlePointer(t.clientX, t.clientY);
-                    e.preventDefault();
-                }
-            }, { passive: false });
-        }
+        this.canvas.addEventListener('touchend', (e) => {
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                const t = e.changedTouches[0];
+                lastTouchTime = Date.now();
+                handleTap(t.clientX, t.clientY);
+                e.preventDefault();
+            }
+        }, { passive: false });
+        this.canvas.addEventListener('pointerup', (e) => {
+            if (e.pointerType === 'touch' && Date.now() - lastTouchTime < 150) return;
+            const coords = this.getEventCoords(e);
+            if (coords) handleTap(coords.x, coords.y);
+            if (e.cancelable) e.preventDefault();
+        });
+        this.canvas.addEventListener('click', (e) => {
+            if (Date.now() - lastTouchTime < 150) return;
+            const coords = this.getEventCoords(e);
+            if (coords) handleTap(coords.x, coords.y);
+        });
         const onMove = (e) => {
             const coords = this.getEventCoords(e);
             if (coords) this.handleMouseMove({ clientX: coords.x, clientY: coords.y });
@@ -97,13 +100,13 @@ class GameEngine {
             this.canvas.addEventListener('pointermove', onMove);
         } else {
             this.canvas.addEventListener('mousemove', onMove);
-            this.canvas.addEventListener('touchmove', (e) => {
-                if (e.touches && e.touches.length > 0) {
-                    const t = e.touches[0];
-                    this.handleMouseMove({ clientX: t.clientX, clientY: t.clientY });
-                }
-            }, { passive: true });
         }
+        this.canvas.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches.length > 0) {
+                const t = e.touches[0];
+                this.handleMouseMove({ clientX: t.clientX, clientY: t.clientY });
+            }
+        }, { passive: true });
         window.addEventListener('resize', () => {
             if (this.canvas.parentElement) {
                 this.setupCanvas();
