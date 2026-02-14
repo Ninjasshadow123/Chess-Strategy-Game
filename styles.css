@@ -183,7 +183,7 @@ body {
     box-shadow: 0 0 16px rgba(100, 100, 120, 0.25);
 }
 
-/* Completed: whole box glows gold */
+/* Completed with all optionals: whole box glows gold */
 .level-card.completed {
     border-color: #8a7020;
     background: linear-gradient(165deg, #3d351a 0%, #2d2815 100%);
@@ -197,6 +197,22 @@ body {
 .level-card.completed .level-name,
 .level-card.completed .level-desc {
     color: #e8dcb0;
+}
+
+/* Completed but at least one optional not done: green glow */
+.level-card.completed-partial {
+    border-color: #4a6a4a;
+    background: linear-gradient(165deg, #2a352a 0%, #1e281e 100%);
+    box-shadow: 0 0 20px rgba(74, 138, 74, 0.5), inset 0 0 30px rgba(74, 138, 74, 0.12);
+}
+
+.level-card.completed-partial .level-symbol {
+    color: #7aba7a;
+}
+
+.level-card.completed-partial .level-name,
+.level-card.completed-partial .level-desc {
+    color: #a8c8a8;
 }
 
 /* Attempted but not completed: red glow */

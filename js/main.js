@@ -4,6 +4,7 @@ const STORAGE_KEY_TUTORIAL = 'chessStrategy_tutorialCompleted';
 const STORAGE_KEY_ATTEMPTED_LEVELS = 'chessStrategy_attemptedLevels';
 const STORAGE_KEY_ATTEMPTED_TUTORIAL = 'chessStrategy_attemptedTutorial';
 const STORAGE_KEY_HIGH_SCORES = 'chessStrategy_highScores';
+const STORAGE_KEY_PERFECT_LEVELS = 'chessStrategy_perfectLevels';
 
 let gameEngine = null;
 let levelManager = null;
@@ -72,6 +73,25 @@ function setHighScore(levelNumber, score) {
     if (typeof score === 'number' && (prev == null || score > prev)) {
         obj[String(levelNumber)] = score;
         localStorage.setItem(STORAGE_KEY_HIGH_SCORES, JSON.stringify(obj));
+    }
+}
+
+function getPerfectLevels() {
+    const s = localStorage.getItem(STORAGE_KEY_PERFECT_LEVELS) || '';
+    if (!s) return [];
+    return s.split(',').map(n => parseInt(n, 10)).filter(n => !isNaN(n) && n >= 1);
+}
+
+function setPerfectLevel(levelNumber, isPerfect) {
+    const perfect = getPerfectLevels();
+    const idx = perfect.indexOf(levelNumber);
+    if (isPerfect && idx === -1) {
+        perfect.push(levelNumber);
+        perfect.sort((a, b) => a - b);
+        localStorage.setItem(STORAGE_KEY_PERFECT_LEVELS, perfect.join(','));
+    } else if (!isPerfect && idx !== -1) {
+        perfect.splice(idx, 1);
+        localStorage.setItem(STORAGE_KEY_PERFECT_LEVELS, perfect.join(','));
     }
 }
 
@@ -172,17 +192,22 @@ function renderLevelsList() {
 
     const completedLevels = getCompletedLevels();
     const attemptedLevels = getAttemptedLevels();
+    const perfectLevels = getPerfectLevels();
 
     levels.forEach((level, index) => {
         const levelNum = index + 1;
         const locked = levelNum > maxUnlocked;
         const completed = completedLevels.indexOf(levelNum) !== -1;
         const attempted = attemptedLevels.indexOf(levelNum) !== -1;
+        const hasOptionals = level.optionalObjectives && level.optionalObjectives.length > 0;
+        const allOptionalsDone = !hasOptionals || perfectLevels.indexOf(levelNum) !== -1;
+        const completedClass = completed
+            ? (hasOptionals && !allOptionalsDone ? ' completed-partial' : ' completed')
+            : (attempted ? ' attempted' : ' not-started');
         const sym = getLevelSymbol(level.name);
         const card = document.createElement('button');
         card.type = 'button';
-        card.className = 'level-card card-centered' + (locked ? ' locked' : '') +
-            (completed ? ' completed' : attempted ? ' attempted' : ' not-started');
+        card.className = 'level-card card-centered' + (locked ? ' locked' : '') + completedClass;
         const hi = getHighScore(levelNum);
         const hiStr = hi != null ? 'Best: ' + hi : '';
         card.innerHTML = '<span class="level-symbol">' + sym + '</span><span class="level-name">' + level.name + '</span><span class="level-desc">Level ' + levelNum + (hiStr ? ' · ' + hiStr : '') + '</span>';
@@ -330,6 +355,7 @@ function onVictory() {
         if (!tutorialMode && levelManager) setHighScore(levelManager.currentLevel, score);
         const base = 1000;
         let optHtml = '';
+        let allOptionalsDone = true;
         if (levelData) {
             const optList = levelData.optionalObjectives ? levelData.optionalObjectives : [];
             const allEnemiesDead = gameEngine.units && gameEngine.units.filter(u => !u.isPlayerUnit && u.isAlive()).length === 0;
@@ -340,7 +366,11 @@ function onVictory() {
                 else if (o.type === 'eliminateAll') done = allEnemiesDead;
                 else if (o.type === 'noUnitsLost') done = r.unitsLost.length === 0;
                 else if (o.type === 'maxTurns') done = r.turns <= (o.value || 999);
+                if (!done) allOptionalsDone = false;
                 optHtml += '<br><span class="optional-result">' + text + ' ' + (done ? '✓' : '✗') + '</span>';
+            }
+            if (!tutorialMode && levelManager) {
+                setPerfectLevel(levelManager.currentLevel, optList.length === 0 || allOptionalsDone);
             }
         }
         statsEl.innerHTML =
