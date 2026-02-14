@@ -69,14 +69,54 @@ class GameEngine {
     }
 
     setupEventListeners() {
-        this.canvas.addEventListener('click', (e) => this.handleClick(e));
-        this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        const onPointerUp = (e) => {
+            const coords = this.getEventCoords(e);
+            if (coords) this.handlePointer(coords.x, coords.y);
+            if (e.cancelable) e.preventDefault();
+        };
+        if (window.PointerEvent) {
+            this.canvas.addEventListener('pointerup', onPointerUp);
+        } else {
+            this.canvas.addEventListener('click', (e) => {
+                const coords = this.getEventCoords(e);
+                if (coords) this.handlePointer(coords.x, coords.y);
+            });
+            this.canvas.addEventListener('touchend', (e) => {
+                if (e.changedTouches && e.changedTouches.length > 0) {
+                    const t = e.changedTouches[0];
+                    this.handlePointer(t.clientX, t.clientY);
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        }
+        const onMove = (e) => {
+            const coords = this.getEventCoords(e);
+            if (coords) this.handleMouseMove({ clientX: coords.x, clientY: coords.y });
+        };
+        if (window.PointerEvent) {
+            this.canvas.addEventListener('pointermove', onMove);
+        } else {
+            this.canvas.addEventListener('mousemove', onMove);
+            this.canvas.addEventListener('touchmove', (e) => {
+                if (e.touches && e.touches.length > 0) {
+                    const t = e.touches[0];
+                    this.handleMouseMove({ clientX: t.clientX, clientY: t.clientY });
+                }
+            }, { passive: true });
+        }
         window.addEventListener('resize', () => {
             if (this.canvas.parentElement) {
                 this.setupCanvas();
                 this.render();
             }
         });
+    }
+
+    getEventCoords(e) {
+        if (e.clientX != null && e.clientY != null) return { x: e.clientX, y: e.clientY };
+        if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        if (e.changedTouches && e.changedTouches.length > 0) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+        return null;
     }
 
     eventToLogical(clientX, clientY) {
@@ -86,10 +126,10 @@ class GameEngine {
         return { x: logicalX, y: logicalY };
     }
 
-    handleClick(e) {
+    handlePointer(clientX, clientY) {
         if (this.gameState !== 'playing' || !this.isPlayerTurn) return;
 
-        const { x: logicalX, y: logicalY } = this.eventToLogical(e.clientX, e.clientY);
+        const { x: logicalX, y: logicalY } = this.eventToLogical(clientX, clientY);
         const boardPixelX = logicalX - this.offsetX;
         const boardPixelY = logicalY - this.offsetY;
         const boardPos = this.board.worldToBoard(boardPixelX, boardPixelY);
